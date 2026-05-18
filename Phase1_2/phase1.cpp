@@ -14,7 +14,7 @@ char buffer[40];
 
 int SI;
 
-ifstream fin("input.txt");
+ifstream fin("input4.txt");
 ofstream fout("output.txt");
 
 void LOAD();
@@ -26,30 +26,48 @@ void WRITE();
 void TERMINATE();
 void PRINTMEMORY();
 
-void LOAD() {
+void LOAD()
+{
     int m = 0;
 
-    while (!fin.eof()) {
-        fin.getline(buffer, 40);
-
-        if (strncmp(buffer, "$AMJ", 4) == 0) {
+    while(fin.getline(buffer, 100))
+    {
+        if(strncmp(buffer, "$AMJ", 4) == 0)
+        {
             INIT();
             m = 0;
         }
-        else if (strncmp(buffer, "$DTA", 4) == 0) {
-            STARTEXECUTION:
+
+        else if(strncmp(buffer, "$DTA", 4) == 0)
+        {
             IC = 0;
             EXECUTE();
         }
-        else if (strncmp(buffer, "$END", 4) == 0) {
+
+        else if(strncmp(buffer, "$END", 4) == 0)
+        {
             continue;
         }
-        else {
-            for (int i = 0; i < 40; i++) {
-                M[m][i % 4] = buffer[i];
 
-                if (i % 4 == 3)
-                    m++;
+        else
+        {
+            int len = strlen(buffer);
+
+            int k = 0;
+
+            while(k < len)
+            {
+                
+                for(int j = 0; j < 4; j++)
+                    M[m][j] = ' ';
+
+                
+                for(int j = 0; j < 4 && k < len; j++)
+                {
+                    M[m][j] = buffer[k++];
+                }
+
+                m++;
             }
         }
     }
@@ -104,7 +122,7 @@ void EXECUTE() {
             SI = 2;
             MOS();
         }
-        else if (IR[0] == 'H') {
+        else if (IR[0] == 'H' && IR[1] == ' ') {
             SI = 3;
             MOS();
             break;
