@@ -1,0 +1,203 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int n, m;
+
+void calculateNeed(vector<vector<int>>& need,
+                   vector<vector<int>>& max,
+                   vector<vector<int>>& allocation) {
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+}
+
+void bankersAlgorithm(vector<vector<int>>& allocation,
+                      vector<vector<int>>& max,
+                      vector<int>& available) {
+    
+    vector<vector<int>> need(n, vector<int>(m));
+    calculateNeed(need, max, allocation);
+
+    vector<bool> finish(n, false);
+    vector<int> safeSeq;
+    vector<int> work = available;
+
+    int count = 0;
+
+    while(count < n) {
+        bool found = false;
+
+        for(int i = 0; i < n; i++) {
+            if(!finish[i]) {
+                bool possible = true;
+
+                for(int j = 0; j < m; j++) {
+                    if(need[i][j] > work[j]) {
+                        possible = false;
+                        break;
+                    }
+                }
+
+                if(possible) {
+                    for(int j = 0; j < m; j++) {
+                        work[j] += allocation[i][j];
+                    }
+
+                    safeSeq.push_back(i);
+                    finish[i] = true;
+                    found = true;
+                    count++;
+                }
+            }
+        }
+
+        if(!found) {
+            cout << "\nSystem is in UNSAFE state (Deadlock possible)\n";
+            return;
+        }
+    }
+
+    cout << "\nSystem is in SAFE state\nSafe Sequence: ";
+    for(int i : safeSeq)
+        cout << "P" << i << " ";
+    cout << endl;
+}
+
+void deadlockDetection(vector<vector<int>>& allocation,
+                       vector<vector<int>>& request,
+                       vector<int>& available) {
+    
+    vector<bool> finish(n);
+    vector<int> work = available;
+
+    for(int i = 0; i < n; i++) {
+        bool zeroAlloc = true;
+
+        for(int j = 0; j < m; j++) {
+            if(allocation[i][j] != 0) {
+                zeroAlloc = false;
+                break;
+            }
+        }
+
+        finish[i] = zeroAlloc;
+    }
+
+    while(true) {
+        bool found = false;
+
+        for(int i = 0; i < n; i++) {
+            if(!finish[i]) {
+                bool possible = true;
+
+                for(int j = 0; j < m; j++) {
+                    if(request[i][j] > work[j]) {
+                        possible = false;
+                        break;
+                    }
+                }
+
+                if(possible) {
+                    for(int j = 0; j < m; j++) {
+                        work[j] += allocation[i][j];
+                    }
+
+                    finish[i] = true;
+                    found = true;
+                }
+            }
+        }
+
+        if(!found)
+            break;
+    }
+
+    bool deadlock = false;
+
+    cout << "\nDeadlocked Processes: ";
+    for(int i = 0; i < n; i++) {
+        if(!finish[i]) {
+            cout << "P" << i << " ";
+            deadlock = true;
+        }
+    }
+
+    if(!deadlock)
+        cout << "None";
+
+    cout << endl;
+}
+
+int main() {
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    cout << "Enter number of resource types: ";
+    cin >> m;
+
+    vector<vector<int>> allocation(n, vector<int>(m));
+    vector<vector<int>> max(n, vector<int>(m));
+    vector<vector<int>> request(n, vector<int>(m));
+    vector<int> available(m);
+
+    cout << "\nEnter Allocation Matrix:\n";
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            cin >> allocation[i][j];
+        }
+    }
+
+    // cout << "\nEnter Max Matrix:\n";
+    // for(int i = 0; i < n; i++) {
+    //     for(int j = 0; j < m; j++) {
+    //         cin >> max[i][j];
+    //     }
+    // }
+
+    cout << "\nEnter Available Resources:\n";
+    for(int i = 0; i < m; i++) {
+        cin >> available[i];
+    }
+
+    cout << "\nEnter Request Matrix (for Deadlock Detection):\n";
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            cin >> request[i][j];
+        }
+    }
+
+    deadlockDetection(allocation, request, available);
+    // int choice;
+
+    // do {
+    //     cout << "\nMenu:\n";
+    //     cout << "1. Check Safe State (Banker's Algorithm)\n";
+    //     cout << "2. Deadlock Detection\n";
+    //     cout << "3. Exit\n";
+    //     cout << "Enter choice: ";
+    //     cin >> choice;
+
+    //     switch(choice) {
+    //         case 1:
+    //             bankersAlgorithm(allocation, max, available);
+    //             break;
+
+    //         case 2:
+    //             deadlockDetection(allocation, request, available);
+    //             break;
+
+    //         case 3:
+    //             cout << "Exiting...\n";
+    //             break;
+
+    //         default:
+    //             cout << "Invalid choice\n";
+    //     }
+
+    // } while(choice != 3);
+
+    return 0;
+}
